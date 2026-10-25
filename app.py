@@ -168,32 +168,109 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     margin-bottom: 1rem;
 }}
 
-/* Custom markdown tables */
-.data-table {{
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    font-size: 0.8rem;
-    margin-top: 0.5rem;
+/* Markdown Tables responsive horizontal scrolling & visible scrollbar */
+[data-testid="stMarkdownContainer"] table, .report-viewer-text table, .data-table {{
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    border-collapse: collapse !important;
+    margin: 1.25rem 0 !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius) !important;
+    background-color: var(--card) !important;
 }}
-.data-table th {{
-    text-align: left;
-    padding: 0.6rem 0.8rem;
-    color: var(--text-muted);
-    font-weight: 600;
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    border-bottom: 1px solid var(--border);
-    background-color: var(--bg-subtle);
+[data-testid="stMarkdownContainer"] table th, .report-viewer-text table th, .data-table th {{
+    background-color: var(--bg-subtle) !important;
+    color: var(--accent) !important;
+    font-weight: 700 !important;
+    padding: 0.7rem 0.9rem !important;
+    border: 1px solid var(--border) !important;
+    white-space: nowrap !important;
+    font-size: 0.8rem !important;
+    text-align: left !important;
 }}
-.data-table td {{
-    padding: 0.65rem 0.8rem;
-    color: var(--text);
-    border-bottom: 1px solid var(--border-subtle);
+[data-testid="stMarkdownContainer"] table td, .report-viewer-text table td, .data-table td {{
+    padding: 0.65rem 0.9rem !important;
+    border: 1px solid var(--border-subtle) !important;
+    color: var(--text) !important;
+    white-space: nowrap !important;
+    font-size: 0.8rem !important;
 }}
-.data-table tr:last-child td {{
-    border-bottom: none;
+[data-testid="stMarkdownContainer"] table tr:hover td, .report-viewer-text table tr:hover td {{
+    background-color: var(--card-hover) !important;
+}}
+
+/* Visible Scrollbars for all scrollable tables */
+[data-testid="stMarkdownContainer"] table::-webkit-scrollbar, .report-viewer-text table::-webkit-scrollbar, .data-table::-webkit-scrollbar {{
+    height: 8px !important;
+    width: 8px !important;
+    display: block !important;
+}}
+[data-testid="stMarkdownContainer"] table::-webkit-scrollbar-thumb, .report-viewer-text table::-webkit-scrollbar-thumb, .data-table::-webkit-scrollbar-thumb {{
+    background: #2563eb !important;
+    border-radius: 4px !important;
+}}
+[data-testid="stMarkdownContainer"] table::-webkit-scrollbar-track, .report-viewer-text table::-webkit-scrollbar-track, .data-table::-webkit-scrollbar-track {{
+    background: rgba(255, 255, 255, 0.08) !important;
+    border-radius: 4px !important;
+}}
+
+/* Markdown Lists Indentation Fix: Prevent excessive left padding & right-shift */
+[data-testid="stMarkdownContainer"] ul, [data-testid="stMarkdownContainer"] ol,
+.report-viewer-text ul, .report-viewer-text ol {{
+    padding-left: 1.25rem !important;
+    margin-left: 0 !important;
+    margin-top: 0.25rem !important;
+    margin-bottom: 0.75rem !important;
+}}
+[data-testid="stMarkdownContainer"] ul ul, [data-testid="stMarkdownContainer"] ol ol,
+[data-testid="stMarkdownContainer"] ul ol, [data-testid="stMarkdownContainer"] ol ul,
+.report-viewer-text ul ul, .report-viewer-text ol ol,
+.report-viewer-text ul ol, .report-viewer-text ol ul {{
+    padding-left: 1.1rem !important;
+    margin-left: 0 !important;
+    margin-top: 0.2rem !important;
+    margin-bottom: 0.4rem !important;
+}}
+[data-testid="stMarkdownContainer"] li, .report-viewer-text li {{
+    margin-bottom: 0.4rem !important;
+    line-height: 1.65 !important;
+    color: var(--text) !important;
+}}
+
+/* Mobile Viewport Responsive Overrides */
+@media (max-width: 768px) {{
+    .block-container {{
+        padding: 0.75rem 0.5rem 1.5rem !important;
+        max-width: 100% !important;
+    }}
+    .card-content {{
+        padding: 0.85rem 0.65rem !important;
+        margin-bottom: 0.85rem !important;
+    }}
+    [data-testid="stHorizontalBlock"] {{
+        gap: 0.5rem !important;
+    }}
+    .metric-card {{
+        padding: 0.75rem 0.75rem !important;
+    }}
+    .metric-value {{
+        font-size: 1.25rem !important;
+    }}
+    [data-testid="stMarkdownContainer"] ul, [data-testid="stMarkdownContainer"] ol,
+    .report-viewer-text ul, .report-viewer-text ol {{
+        padding-left: 1.0rem !important;
+    }}
+    [data-testid="stMarkdownContainer"] ul ul, [data-testid="stMarkdownContainer"] ol ol {{
+        padding-left: 0.9rem !important;
+    }}
+    [data-testid="stMarkdownContainer"] table th, .report-viewer-text table th,
+    [data-testid="stMarkdownContainer"] table td, .report-viewer-text table td {{
+        padding: 0.55rem 0.7rem !important;
+        font-size: 0.76rem !important;
+    }}
 }}
 
 /* Badges */
@@ -1169,7 +1246,7 @@ if "current_ticker" in st.session_state and "report_content" in st.session_state
         )
     st.markdown("<div style='border-bottom: 1px solid var(--border); margin-bottom: 1rem; margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
     
-    st.markdown(report_content)
+    st.markdown(f'<div class="report-viewer-text">{get_colorful_report(report_content)}</div>', unsafe_allow_html=True)
     st.markdown("</div>", unsafe_allow_html=True)
 else:
     # Default State Message
