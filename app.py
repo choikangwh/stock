@@ -220,45 +220,45 @@ button[data-baseweb="tab"][aria-selected="true"] {{
 }}
 
 /* Button styling overrides to ensure text visibility */
-div.stButton > button, button[key="api_key_dialog_btn"], button[key="theme_toggle_btn"] {
+div.stButton > button, button[key="api_key_dialog_btn"], button[key="theme_toggle_btn"] {{
     background-color: var(--card) !important;
     color: var(--text) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius) !important;
     font-weight: 500 !important;
     transition: all 0.2s ease-in-out !important;
-}
-div.stButton > button:hover {
+}}
+div.stButton > button:hover {{
     background-color: var(--card-hover) !important;
     border-color: var(--accent) !important;
     color: var(--text) !important;
-}
+}}
 /* Form Submit & Download button distinct styling with white text */
-div.stFormSubmitButton > button, div[data-testid="stDownloadButton"] > button, div.stDownloadButton > button {
+div.stFormSubmitButton > button, div[data-testid="stDownloadButton"] > button, div.stDownloadButton > button {{
     background-color: var(--accent) !important;
     color: #ffffff !important;
     border: 1px solid var(--accent-muted) !important;
     border-radius: var(--radius) !important;
     font-weight: 600 !important;
     transition: all 0.2s ease-in-out !important;
-}
-div.stFormSubmitButton > button:hover, div[data-testid="stDownloadButton"] > button:hover, div.stDownloadButton > button:hover {
+}}
+div.stFormSubmitButton > button:hover, div[data-testid="stDownloadButton"] > button:hover, div.stDownloadButton > button:hover {{
     background-color: var(--accent-muted) !important;
     color: #ffffff !important;
-}
-div.stFormSubmitButton > button *, div[data-testid="stDownloadButton"] > button *, div.stDownloadButton > button * {
+}}
+div.stFormSubmitButton > button *, div[data-testid="stDownloadButton"] > button *, div.stDownloadButton > button * {{
     color: #ffffff !important;
-}
+}}
 
 /* Code tag legibility override */
-code {
+code {{
     background-color: rgba(255, 255, 255, 0.08) !important;
     color: #60a5fa !important;
     padding: 3px 8px !important;
     border-radius: 5px !important;
     border: 1px solid var(--border) !important;
     font-family: monospace !important;
-}
+}}
 /* Text Input legibility overrides */
 div[data-testid="stTextInput"] input {{
     background-color: var(--bg-subtle) !important;
