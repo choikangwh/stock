@@ -217,59 +217,83 @@ button[data-baseweb="tab"][aria-selected="true"] {{
     border-radius: 4px !important;
 }}
 
-/* Markdown Lists Indentation Fix: Prevent excessive left padding & right-shift */
+/* Markdown Lists Indentation Fix: Prevent excessive left padding & right-shift on sub-topics */
 [data-testid="stMarkdownContainer"] ul, [data-testid="stMarkdownContainer"] ol,
 .report-viewer-text ul, .report-viewer-text ol {{
-    padding-left: 1.25rem !important;
+    padding-left: 0.85rem !important;
     margin-left: 0 !important;
     margin-top: 0.25rem !important;
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 0.65rem !important;
 }}
+[data-testid="stMarkdownContainer"] li > ul, [data-testid="stMarkdownContainer"] li > ol,
 [data-testid="stMarkdownContainer"] ul ul, [data-testid="stMarkdownContainer"] ol ol,
 [data-testid="stMarkdownContainer"] ul ol, [data-testid="stMarkdownContainer"] ol ul,
+.report-viewer-text li > ul, .report-viewer-text li > ol,
 .report-viewer-text ul ul, .report-viewer-text ol ol,
 .report-viewer-text ul ol, .report-viewer-text ol ul {{
-    padding-left: 1.1rem !important;
+    padding-left: 0.55rem !important;
     margin-left: 0 !important;
-    margin-top: 0.2rem !important;
-    margin-bottom: 0.4rem !important;
+    margin-top: 0.15rem !important;
+    margin-bottom: 0.35rem !important;
+}}
+[data-testid="stMarkdownContainer"] ul ul ul, .report-viewer-text ul ul ul,
+[data-testid="stMarkdownContainer"] li > ul > li > ul, .report-viewer-text li > ul > li > ul {{
+    padding-left: 0.45rem !important;
+    margin-left: 0 !important;
 }}
 [data-testid="stMarkdownContainer"] li, .report-viewer-text li {{
-    margin-bottom: 0.4rem !important;
+    margin-bottom: 0.35rem !important;
     line-height: 1.65 !important;
     color: var(--text) !important;
+}}
+[data-testid="stMarkdownContainer"] h1, [data-testid="stMarkdownContainer"] h2,
+[data-testid="stMarkdownContainer"] h3, [data-testid="stMarkdownContainer"] h4,
+[data-testid="stMarkdownContainer"] p, .report-viewer-text p {{
+    margin-left: 0 !important;
+    padding-left: 0 !important;
 }}
 
 /* Mobile Viewport Responsive Overrides */
 @media (max-width: 768px) {{
     .block-container {{
-        padding: 0.75rem 0.5rem 1.5rem !important;
+        padding: 0.5rem 0.25rem 1.5rem !important;
         max-width: 100% !important;
     }}
     .card-content {{
-        padding: 0.85rem 0.65rem !important;
-        margin-bottom: 0.85rem !important;
+        padding: 0.75rem 0.4rem !important;
+        margin-bottom: 0.75rem !important;
+        border-radius: 6px !important;
     }}
     [data-testid="stHorizontalBlock"] {{
-        gap: 0.5rem !important;
+        gap: 0.4rem !important;
     }}
     .metric-card {{
-        padding: 0.75rem 0.75rem !important;
+        padding: 0.65rem 0.65rem !important;
     }}
     .metric-value {{
         font-size: 1.25rem !important;
     }}
+    /* Ultra-compact indentation for mobile nested lists */
     [data-testid="stMarkdownContainer"] ul, [data-testid="stMarkdownContainer"] ol,
     .report-viewer-text ul, .report-viewer-text ol {{
-        padding-left: 1.0rem !important;
+        padding-left: 0.7rem !important;
+        margin-left: 0 !important;
     }}
-    [data-testid="stMarkdownContainer"] ul ul, [data-testid="stMarkdownContainer"] ol ol {{
-        padding-left: 0.9rem !important;
+    [data-testid="stMarkdownContainer"] li > ul, [data-testid="stMarkdownContainer"] li > ol,
+    [data-testid="stMarkdownContainer"] ul ul, [data-testid="stMarkdownContainer"] ol ol,
+    .report-viewer-text li > ul, .report-viewer-text li > ol,
+    .report-viewer-text ul ul, .report-viewer-text ol ol {{
+        padding-left: 0.4rem !important;
+        margin-left: 0 !important;
+    }}
+    [data-testid="stMarkdownContainer"] ul ul ul, .report-viewer-text ul ul ul {{
+        padding-left: 0.3rem !important;
+        margin-left: 0 !important;
     }}
     [data-testid="stMarkdownContainer"] table th, .report-viewer-text table th,
     [data-testid="stMarkdownContainer"] table td, .report-viewer-text table td {{
-        padding: 0.55rem 0.7rem !important;
-        font-size: 0.76rem !important;
+        padding: 0.5rem 0.65rem !important;
+        font-size: 0.75rem !important;
     }}
 }}
 
@@ -612,164 +636,63 @@ def prepare_download_data(format_type, base_name, raw_content):
         return raw_content, f"{base_name}.md", "text/markdown"
 
 
-@st.dialog("📋 투자 분석 보고서 뷰어", width="large")
-def open_report_viewer_dialog(filepath):
+def render_fullscreen_report_viewer(filepath):
     try:
         with open(filepath, "r", encoding="utf-8") as f:
             content = f.read()
-        
-        colorful_content = get_colorful_report(content)
-        
-        # Hardcode color parameters based on IS_DARK to bypass Streamlit dialog theme isolation
-        txt_color = "#fafafa" if IS_DARK else "#09090b"
-        bg_color = "#0c0c0f" if IS_DARK else "#ffffff"
-        border_color = "#1e1e24" if IS_DARK else "#e4e4e7"
-        bg_subtle_color = "#16161a" if IS_DARK else "#f9fafb"
-        accent_color = "#2563eb"
-        
-        # Top File info banner with clear colors
-        st.markdown(f"""
-        <div style="font-size: 0.85rem; color: #a1a1aa; margin-bottom: 0.75rem; padding: 7px 12px; background: {bg_subtle_color}; border-radius: 8px; border: 1px solid {border_color}; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span style="font-weight: 600; color: {txt_color};">📄 열린 파일:</span>
-            <span style="background-color: rgba(37,99,235,0.18); color: #60a5fa; padding: 3px 10px; border-radius: 5px; font-family: monospace; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(37,99,235,0.35);">{os.path.basename(filepath)}</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # TOP Action Bar: Format selector + Download button + Close button
-        col_fmt, col_dl, col_close = st.columns([3.8, 4.2, 2.0])
-        base_name = os.path.splitext(os.path.basename(filepath))[0]
-        with col_fmt:
-            dl_format = st.selectbox(
-                "저장 포맷",
-                ["Markdown (.md)", "웹문서 (.html)", "텍스트 파일 (.txt)"],
-                key="dialog_dl_format",
-                label_visibility="collapsed"
-            )
-        dl_data, dl_filename, dl_mime = prepare_download_data(dl_format, base_name, content)
-        with col_dl:
-            st.download_button(
-                f"📥 {dl_format.split()[0]} 다운로드",
-                data=dl_data,
-                file_name=dl_filename,
-                mime=dl_mime,
-                use_container_width=True,
-                key="download_viewer_dialog_top_btn"
-            )
-        with col_close:
-            if st.button("✕ 닫기", use_container_width=True, key="close_viewer_dialog_top"):
-                st.rerun()
-
-        st.markdown(f"<div style='border-bottom: 1px solid {border_color}; margin: 0.75rem 0 1rem;'></div>", unsafe_allow_html=True)
-        
-        st.markdown(f"""
-        <style>
-        /* Force dialog box main wrapper backgrounds and foregrounds */
-        div[data-testid="stDialog"] [role="dialog"], div[data-testid="stDialog"] > div {{
-            background-color: {bg_color} !important;
-            color: {txt_color} !important;
-            border: 1px solid {border_color} !important;
-        }}
-        div[data-testid="stDialog"] h1, div[data-testid="stDialog"] h2, div[data-testid="stDialog"] h3, div[data-testid="stDialog"] h4, div[data-testid="stDialog"] p, div[data-testid="stDialog"] span, div[data-testid="stDialog"] label, div[data-testid="stDialog"] li {{
-            color: {txt_color} !important;
-        }}
-        
-        /* High-contrast Download Button in Dialog */
-        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button,
-        div[data-testid="stDialog"] div.stDownloadButton > button {{
-            background-color: #2563eb !important;
-            color: #ffffff !important;
-            border: 1px solid #1d4ed8 !important;
-            font-weight: 600 !important;
-        }}
-        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button p,
-        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button span,
-        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button * {{
-            color: #ffffff !important;
-        }}
-        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button:hover {{
-            background-color: #1d4ed8 !important;
-            color: #ffffff !important;
-        }}
-        
-        /* High-contrast Close Button in Dialog */
-        div[data-testid="stDialog"] button[key*="close_viewer"] {{
-            background-color: #27272a !important;
-            color: #f4f4f5 !important;
-            border: 1px solid #3f3f46 !important;
-            font-weight: 500 !important;
-        }}
-        div[data-testid="stDialog"] button[key*="close_viewer"]:hover {{
-            background-color: #3f3f46 !important;
-            color: #ffffff !important;
-        }}
-        div[data-testid="stDialog"] button[key*="close_viewer"] * {{
-            color: #f4f4f5 !important;
-        }}
-        
-        /* Ensure code tags in dialog never show white on white */
-        div[data-testid="stDialog"] code {{
-            background-color: rgba(255, 255, 255, 0.08) !important;
-            color: #60a5fa !important;
-            padding: 2px 7px !important;
-            border-radius: 4px !important;
-            border: 1px solid #2e2e38 !important;
-        }}
-        
-        /* Report text styles */
-        .report-viewer-text {{
-            color: {txt_color} !important;
-        }}
-        .report-viewer-text h1, .report-viewer-text h2, .report-viewer-text h3 {{
-            color: {accent_color} !important;
-            margin-top: 1.5rem !important;
-            margin-bottom: 0.8rem !important;
-            font-weight: 700 !important;
-        }}
-        .report-viewer-text h2 {{
-            border-bottom: 2px solid {border_color};
-            padding-bottom: 0.4rem;
-        }}
-        .report-viewer-text h3 {{
-            border-bottom: 1px solid {border_color};
-            padding-bottom: 0.2rem;
-            color: #60a5fa !important;
-        }}
-        .report-viewer-text table {{
-            width: 100% !important;
-            margin: 1rem 0 !important;
-            border-collapse: collapse !important;
-        }}
-        .report-viewer-text th {{
-            background-color: {bg_subtle_color} !important;
-            color: {accent_color} !important;
-            font-weight: bold !important;
-            border: 1px solid {border_color} !important;
-            padding: 8px !important;
-        }}
-        .report-viewer-text td {{
-            border: 1px solid {border_color} !important;
-            padding: 8px !important;
-            color: {txt_color} !important;
-            background-color: {bg_color} !important;
-        }}
-        .report-viewer-text ul, .report-viewer-text ol {{
-            padding-left: 1.5rem !important;
-            margin-bottom: 1rem !important;
-        }}
-        .report-viewer-text li {{
-            margin-bottom: 0.4rem !important;
-            color: {txt_color} !important;
-        }}
-        </style>
-        """, unsafe_allow_html=True)
-        
-        st.markdown(f'<div class="report-viewer-text">{colorful_content}</div>', unsafe_allow_html=True)
-        
-        st.markdown(f"<div style='border-top: 1px solid {border_color}; margin: 1.5rem 0 1rem;'></div>", unsafe_allow_html=True)
-        if st.button("✕ 닫기", use_container_width=True, key="close_viewer_dialog_bottom"):
-            st.rerun()
     except Exception as e:
         st.error(f"보고서를 읽는 중 에러가 발생했습니다: {str(e)}")
+        if st.button("◀ 메인 대시보드로 돌아가기", key="back_to_main_err_btn", use_container_width=True):
+            st.session_state.viewing_report = None
+            st.rerun()
+        return
+
+    # Top Navigation & Action Controls
+    col_back, col_fmt, col_dl = st.columns([4.2, 3.4, 2.4])
+    with col_back:
+        if st.button("◀ 메인 대시보드로 돌아가기", use_container_width=True, key="fs_back_top_btn"):
+            st.session_state.viewing_report = None
+            st.rerun()
+    
+    base_name = os.path.splitext(os.path.basename(filepath))[0]
+    with col_fmt:
+        dl_format = st.selectbox(
+            "저장 포맷",
+            ["Markdown (.md)", "웹문서 (.html)", "텍스트 파일 (.txt)"],
+            key="fs_dl_fmt_select",
+            label_visibility="collapsed"
+        )
+    dl_data, dl_filename, dl_mime = prepare_download_data(dl_format, base_name, content)
+    with col_dl:
+        st.download_button(
+            f"📥 {dl_format.split()[0]} 저장",
+            data=dl_data,
+            file_name=dl_filename,
+            mime=dl_mime,
+            use_container_width=True,
+            key="fs_download_top_btn"
+        )
+        
+    st.markdown(f"""
+    <div style="font-size: 0.85rem; color: var(--text-muted); margin: 0.8rem 0 1rem; padding: 8px 14px; background: var(--bg-subtle); border-radius: 8px; border: 1px solid var(--border); display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+        <span style="font-weight: 600; color: var(--text);">📄 열람 중인 보고서:</span>
+        <span style="background-color: rgba(37,99,235,0.18); color: #60a5fa; padding: 3px 10px; border-radius: 5px; font-family: monospace; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(37,99,235,0.35);">{os.path.basename(filepath)}</span>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Fullscreen Card Content
+    st.markdown(f"""
+    <div class="card-content" style="padding: 1.5rem 1.2rem; margin-bottom: 1rem;">
+        <div class="report-viewer-text">
+            {get_colorful_report(content)}
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    # Bottom Navigation Button
+    if st.button("◀ 메인 대시보드로 돌아가기", use_container_width=True, key="fs_back_bottom_btn"):
+        st.session_state.viewing_report = None
+        st.rerun()
 
 # ==========================================
 # Header Configuration
@@ -788,6 +711,13 @@ with head_api:
 with head_right:
     theme_label = "☀️ Light" if IS_DARK else "🌙 Dark"
     st.button(theme_label, on_click=toggle_theme, use_container_width=True, key="theme_toggle_btn")
+
+# ==========================================
+# Fullscreen Report Viewer Mode (Full Page View)
+# ==========================================
+if st.session_state.get("viewing_report"):
+    render_fullscreen_report_viewer(st.session_state.viewing_report)
+    st.stop()
 
 # ==========================================
 # Core Analysis Logic Functions (Cached)
@@ -1019,7 +949,8 @@ if all_report_files:
     with col_open_btn:
         if st.button("📄 열기", use_container_width=True, key="open_report_dialog_btn"):
             if selected_file:
-                open_report_viewer_dialog(selected_file)
+                st.session_state.viewing_report = selected_file
+                st.rerun()
     with col_del_btn:
         if st.button("🗑️ 삭제", use_container_width=True, key="delete_report_btn"):
             if selected_file and os.path.exists(selected_file):
