@@ -546,8 +546,12 @@ def open_report_viewer_dialog(filepath):
         st.markdown(f'<div class="report-viewer-text">{colorful_content}</div>', unsafe_allow_html=True)
         
         st.markdown("---")
-        if st.button("닫기", use_container_width=True, key="close_viewer_dialog"):
-            st.rerun()
+        col_dlg1, col_dlg2 = st.columns([1, 1])
+        with col_dlg1:
+            st.download_button("📥 파일 다운로드 (.md)", data=content, file_name=os.path.basename(filepath), mime="text/markdown", use_container_width=True, key="download_viewer_dialog_btn")
+        with col_dlg2:
+            if st.button("닫기", use_container_width=True, key="close_viewer_dialog"):
+                st.rerun()
     except Exception as e:
         st.error(f"보고서를 읽는 중 에러가 발생했습니다: {str(e)}")
 
@@ -793,13 +797,22 @@ legacy_files = sorted(glob.glob("*_investment_report.md"), reverse=True)
 all_report_files = report_files + legacy_files
 
 if all_report_files:
-    col_sel, col_open_btn = st.columns([7.5, 2.5])
+    col_sel, col_open_btn, col_del_btn = st.columns([6.0, 2.3, 1.7])
     with col_sel:
         selected_file = st.selectbox("불러올 보고서 선택", all_report_files, key="viewer_file_selectbox", label_visibility="collapsed")
     with col_open_btn:
-        if st.button("📄 보고서 새 창으로 열기", use_container_width=True, key="open_report_dialog_btn"):
+        if st.button("📄 열기", use_container_width=True, key="open_report_dialog_btn"):
             if selected_file:
                 open_report_viewer_dialog(selected_file)
+    with col_del_btn:
+        if st.button("🗑️ 삭제", use_container_width=True, key="delete_report_btn"):
+            if selected_file and os.path.exists(selected_file):
+                try:
+                    os.remove(selected_file)
+                    st.toast(f"보고서가 삭제되었습니다: {selected_file}")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"삭제 실패: {str(e)}")
 else:
     st.info("현재 디렉토리에 생성된 투자 분석 보고서(*_investment_report*.md)가 없습니다. 상단에서 종목 분석을 먼저 실행해 보세요.")
 st.markdown("</div>", unsafe_allow_html=True)
@@ -990,12 +1003,23 @@ if "current_ticker" in st.session_state and "report_content" in st.session_state
     # ==========================================
     # Full Investment Report Markdown
     # ==========================================
-    st.markdown("""
-    <div class="card-content">
-        <div style="font-size: 1.05rem; font-weight: 700; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 1rem;">
+    col_rep_title, col_rep_dl = st.columns([7.5, 2.5])
+    with col_rep_title:
+        st.markdown("""
+        <div style="font-size: 1.05rem; font-weight: 700; color: var(--text); padding-top: 4px;">
             📋 애널리스트 종합 투자 분석 보고서
         </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
+    with col_rep_dl:
+        st.download_button(
+            label="📥 보고서 파일 다운로드",
+            data=report_content,
+            file_name=output_filename,
+            mime="text/markdown",
+            use_container_width=True,
+            key="download_main_report_btn"
+        )
+    st.markdown("<div style='border-bottom: 1px solid var(--border); margin-bottom: 1rem; margin-top: 0.5rem;'></div>", unsafe_allow_html=True)
     
     st.markdown(report_content)
     st.markdown("</div>", unsafe_allow_html=True)
