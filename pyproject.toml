@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "stock-analyst-dashboard"
+version = "1.0.0"
+description = "Gemini 2.5 Flash 및 yfinance 기반 실시간 주식 분석 대시보드 & CLI 리포트 생성기"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "yfinance>=0.2.40",
+    "google-genai>=0.1.1",
+    "pandas>=2.0.0",
+    "python-dotenv>=1.0.0",
+    "requests>=2.31.0",
+    "streamlit>=1.35.0",
+    "plotly>=5.22.0"
+]
+
+[project.scripts]
+stock-dashboard = "cli_launcher:run_dashboard"
+stock-analyzer = "stock_analyzer:main"
+
+[tool.setuptools]
+py-modules = ["app", "stock_analyzer", "cli_launcher"]

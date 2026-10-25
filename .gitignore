@@ -1,0 +1,24 @@
+# Environment & Secrets (중요: API Key 보호)
+.env
+.env.*
+!.env.example
+
+# Python virtual environment
+.venv/
+venv/
+env/
+__pycache__/
+*.pyc
+
+# PyInstaller build outputs
+build/
+dist/
+*.spec
+
+# Reports & Logs
+*.log
+*investment_report*.md
+
+# OS files
+.DS_Store
+Thumbs.db
