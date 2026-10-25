@@ -220,29 +220,45 @@ button[data-baseweb="tab"][aria-selected="true"] {{
 }}
 
 /* Button styling overrides to ensure text visibility */
-div.stButton > button, div.stFormSubmitButton > button, button[key="api_key_dialog_btn"], button[key="theme_toggle_btn"] {{
+div.stButton > button, button[key="api_key_dialog_btn"], button[key="theme_toggle_btn"] {
     background-color: var(--card) !important;
     color: var(--text) !important;
     border: 1px solid var(--border) !important;
     border-radius: var(--radius) !important;
     font-weight: 500 !important;
     transition: all 0.2s ease-in-out !important;
-}}
-div.stButton > button:hover, div.stFormSubmitButton > button:hover {{
+}
+div.stButton > button:hover {
     background-color: var(--card-hover) !important;
     border-color: var(--accent) !important;
     color: var(--text) !important;
-}}
-/* Ensure form submit button stands out with accent color and white text */
-div.stFormSubmitButton > button {{
+}
+/* Form Submit & Download button distinct styling with white text */
+div.stFormSubmitButton > button, div[data-testid="stDownloadButton"] > button, div.stDownloadButton > button {
     background-color: var(--accent) !important;
     color: #ffffff !important;
     border: 1px solid var(--accent-muted) !important;
-}}
-div.stFormSubmitButton > button:hover {{
+    border-radius: var(--radius) !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease-in-out !important;
+}
+div.stFormSubmitButton > button:hover, div[data-testid="stDownloadButton"] > button:hover, div.stDownloadButton > button:hover {
     background-color: var(--accent-muted) !important;
     color: #ffffff !important;
-}}
+}
+div.stFormSubmitButton > button *, div[data-testid="stDownloadButton"] > button *, div.stDownloadButton > button * {
+    color: #ffffff !important;
+}
+
+/* Code tag legibility override */
+code {
+    background-color: rgba(255, 255, 255, 0.08) !important;
+    color: #60a5fa !important;
+    padding: 3px 8px !important;
+    border-radius: 5px !important;
+    border: 1px solid var(--border) !important;
+    font-family: monospace !important;
+}
 /* Text Input legibility overrides */
 div[data-testid="stTextInput"] input {{
     background-color: var(--bg-subtle) !important;
@@ -462,6 +478,63 @@ def get_colorful_report(text):
         text = re.sub(pattern, repl, text)
     return text
 
+def markdown_to_standalone_html(title, md_content):
+    import re
+    html_lines = []
+    for line in md_content.split('\n'):
+        if line.startswith('# '):
+            html_lines.append(f'<h1 style="color:#2563eb; border-bottom: 2px solid #e2e8f0; padding-bottom:8px; margin-top:28px;">{line[2:]}</h1>')
+        elif line.startswith('## '):
+            html_lines.append(f'<h2 style="color:#1d4ed8; border-bottom: 1px solid #e2e8f0; padding-bottom:6px; margin-top:22px;">{line[3:]}</h2>')
+        elif line.startswith('### '):
+            html_lines.append(f'<h3 style="color:#3b82f6; margin-top:16px;">{line[4:]}</h3>')
+        elif line.startswith('- ') or line.startswith('* '):
+            html_lines.append(f'<li style="margin-bottom:6px;">{line[2:]}</li>')
+        elif line.strip() == '---':
+            html_lines.append('<hr style="border:0; border-top:1px solid #e2e8f0; margin:24px 0;">')
+        else:
+            if line.strip():
+                html_lines.append(f'<p style="margin-bottom:10px; line-height:1.75;">{line}</p>')
+            else:
+                html_lines.append('<br>')
+    body = '\n'.join(html_lines)
+    body = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', body)
+    
+    return f"""<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{title}</title>
+<style>
+body {{ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif; line-height: 1.7; max-width: 900px; margin: 0 auto; padding: 40px 20px; background-color: #f8fafc; color: #1e293b; }}
+.container {{ background: #ffffff; border-radius: 12px; padding: 40px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); border: 1px solid #e2e8f0; }}
+h1, h2, h3 {{ font-weight: 700; }}
+strong {{ color: #0f172a; font-weight: 600; }}
+li {{ line-height: 1.7; }}
+table {{ width: 100%; border-collapse: collapse; margin: 16px 0; }}
+th, td {{ border: 1px solid #e2e8f0; padding: 10px; text-align: left; }}
+th {{ background-color: #f1f5f9; font-weight: 600; color: #1e40af; }}
+@media print {{ body {{ background: #fff; padding: 0; }} .container {{ box-shadow: none; border: none; padding: 0; }} }}
+</style>
+</head>
+<body>
+<div class="container">
+{body}
+</div>
+</body>
+</html>"""
+
+def prepare_download_data(format_type, base_name, raw_content):
+    if "html" in format_type.lower():
+        html_doc = markdown_to_standalone_html(base_name, raw_content)
+        return html_doc, f"{base_name}.html", "text/html"
+    elif "txt" in format_type.lower():
+        return raw_content, f"{base_name}.txt", "text/plain"
+    else:  # md
+        return raw_content, f"{base_name}.md", "text/markdown"
+
+
 @st.dialog("📋 투자 분석 보고서 뷰어", width="large")
 def open_report_viewer_dialog(filepath):
     try:
@@ -477,11 +550,39 @@ def open_report_viewer_dialog(filepath):
         bg_subtle_color = "#16161a" if IS_DARK else "#f9fafb"
         accent_color = "#2563eb"
         
+        # Top File info banner with clear colors
         st.markdown(f"""
-        <div style="font-size: 0.82rem; color: #71717a; margin-bottom: 0.8rem; padding: 4px 8px; background: {bg_subtle_color}; border-radius: 6px; border: 1px solid {border_color};">
-            📄 열린 파일: <code>{filepath}</code>
+        <div style="font-size: 0.85rem; color: #a1a1aa; margin-bottom: 0.75rem; padding: 7px 12px; background: {bg_subtle_color}; border-radius: 8px; border: 1px solid {border_color}; display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span style="font-weight: 600; color: {txt_color};">📄 열린 파일:</span>
+            <span style="background-color: rgba(37,99,235,0.18); color: #60a5fa; padding: 3px 10px; border-radius: 5px; font-family: monospace; font-size: 0.82rem; font-weight: 500; border: 1px solid rgba(37,99,235,0.35);">{os.path.basename(filepath)}</span>
         </div>
         """, unsafe_allow_html=True)
+        
+        # TOP Action Bar: Format selector + Download button + Close button
+        col_fmt, col_dl, col_close = st.columns([3.8, 4.2, 2.0])
+        base_name = os.path.splitext(os.path.basename(filepath))[0]
+        with col_fmt:
+            dl_format = st.selectbox(
+                "저장 포맷",
+                ["Markdown (.md)", "웹문서 (.html)", "텍스트 파일 (.txt)"],
+                key="dialog_dl_format",
+                label_visibility="collapsed"
+            )
+        dl_data, dl_filename, dl_mime = prepare_download_data(dl_format, base_name, content)
+        with col_dl:
+            st.download_button(
+                f"📥 {dl_format.split()[0]} 다운로드",
+                data=dl_data,
+                file_name=dl_filename,
+                mime=dl_mime,
+                use_container_width=True,
+                key="download_viewer_dialog_top_btn"
+            )
+        with col_close:
+            if st.button("✕ 닫기", use_container_width=True, key="close_viewer_dialog_top"):
+                st.rerun()
+
+        st.markdown(f"<div style='border-bottom: 1px solid {border_color}; margin: 0.75rem 0 1rem;'></div>", unsafe_allow_html=True)
         
         st.markdown(f"""
         <style>
@@ -491,8 +592,50 @@ def open_report_viewer_dialog(filepath):
             color: {txt_color} !important;
             border: 1px solid {border_color} !important;
         }}
-        div[data-testid="stDialog"] h1, div[data-testid="stDialog"] h2, div[data-testid="stDialog"] h3, div[data-testid="stDialog"] h4, div[data-testid="stDialog"] p, div[data-testid="stDialog"] span, div[data-testid="stDialog"] label, div[data-testid="stDialog"] li, div[data-testid="stDialog"] code {{
+        div[data-testid="stDialog"] h1, div[data-testid="stDialog"] h2, div[data-testid="stDialog"] h3, div[data-testid="stDialog"] h4, div[data-testid="stDialog"] p, div[data-testid="stDialog"] span, div[data-testid="stDialog"] label, div[data-testid="stDialog"] li {{
             color: {txt_color} !important;
+        }}
+        
+        /* High-contrast Download Button in Dialog */
+        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button,
+        div[data-testid="stDialog"] div.stDownloadButton > button {{
+            background-color: #2563eb !important;
+            color: #ffffff !important;
+            border: 1px solid #1d4ed8 !important;
+            font-weight: 600 !important;
+        }}
+        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button p,
+        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button span,
+        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button * {{
+            color: #ffffff !important;
+        }}
+        div[data-testid="stDialog"] div[data-testid="stDownloadButton"] > button:hover {{
+            background-color: #1d4ed8 !important;
+            color: #ffffff !important;
+        }}
+        
+        /* High-contrast Close Button in Dialog */
+        div[data-testid="stDialog"] button[key*="close_viewer"] {{
+            background-color: #27272a !important;
+            color: #f4f4f5 !important;
+            border: 1px solid #3f3f46 !important;
+            font-weight: 500 !important;
+        }}
+        div[data-testid="stDialog"] button[key*="close_viewer"]:hover {{
+            background-color: #3f3f46 !important;
+            color: #ffffff !important;
+        }}
+        div[data-testid="stDialog"] button[key*="close_viewer"] * {{
+            color: #f4f4f5 !important;
+        }}
+        
+        /* Ensure code tags in dialog never show white on white */
+        div[data-testid="stDialog"] code {{
+            background-color: rgba(255, 255, 255, 0.08) !important;
+            color: #60a5fa !important;
+            padding: 2px 7px !important;
+            border-radius: 4px !important;
+            border: 1px solid #2e2e38 !important;
         }}
         
         /* Report text styles */
@@ -545,13 +688,9 @@ def open_report_viewer_dialog(filepath):
         
         st.markdown(f'<div class="report-viewer-text">{colorful_content}</div>', unsafe_allow_html=True)
         
-        st.markdown("---")
-        col_dlg1, col_dlg2 = st.columns([1, 1])
-        with col_dlg1:
-            st.download_button("📥 파일 다운로드 (.md)", data=content, file_name=os.path.basename(filepath), mime="text/markdown", use_container_width=True, key="download_viewer_dialog_btn")
-        with col_dlg2:
-            if st.button("닫기", use_container_width=True, key="close_viewer_dialog"):
-                st.rerun()
+        st.markdown(f"<div style='border-top: 1px solid {border_color}; margin: 1.5rem 0 1rem;'></div>", unsafe_allow_html=True)
+        if st.button("✕ 닫기", use_container_width=True, key="close_viewer_dialog_bottom"):
+            st.rerun()
     except Exception as e:
         st.error(f"보고서를 읽는 중 에러가 발생했습니다: {str(e)}")
 
@@ -1003,19 +1142,28 @@ if "current_ticker" in st.session_state and "report_content" in st.session_state
     # ==========================================
     # Full Investment Report Markdown
     # ==========================================
-    col_rep_title, col_rep_dl = st.columns([7.5, 2.5])
+    col_rep_title, col_rep_fmt, col_rep_dl = st.columns([5.2, 2.8, 2.0])
     with col_rep_title:
         st.markdown("""
         <div style="font-size: 1.05rem; font-weight: 700; color: var(--text); padding-top: 4px;">
             📋 애널리스트 종합 투자 분석 보고서
         </div>
         """, unsafe_allow_html=True)
+    with col_rep_fmt:
+        main_fmt = st.selectbox(
+            "다운로드 포맷",
+            ["Markdown (.md)", "웹문서 (.html)", "텍스트 파일 (.txt)"],
+            key="main_rep_fmt_select",
+            label_visibility="collapsed"
+        )
+    main_base = f"{ticker.replace('.', '_')}_investment_report_{today_str}"
+    m_data, m_filename, m_mime = prepare_download_data(main_fmt, main_base, report_content)
     with col_rep_dl:
         st.download_button(
-            label="📥 보고서 파일 다운로드",
-            data=report_content,
-            file_name=output_filename,
-            mime="text/markdown",
+            label=f"📥 {main_fmt.split()[0]} 저장",
+            data=m_data,
+            file_name=m_filename,
+            mime=m_mime,
             use_container_width=True,
             key="download_main_report_btn"
         )
